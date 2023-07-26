@@ -1,0 +1,134 @@
+SELECT * FROM Customers;
+SELECT DISTINCT Country FROM Customers;
+SELECT * FROM Customers WHERE Country='Mexico';
+SELECT * FROM Customers WHERE Country='Germany' AND City='Berlin';
+SELECT * FROM Customers WHERE City='Berlin' OR City='München';
+SELECT * FROM Customers WHERE NOT Country='Germany' AND NOT Country='USA';
+SELECT * FROM Customers ORDER BY Country DESC;
+SELECT * FROM Customers ORDER BY Country ASC, CustomerName DESC;
+INSERT INTO Customers (CustomerName, City, Country) VALUES ('Cardinal', 'Stavanger', 'Norway');
+SELECT CustomerName, ContactName, Address FROM Customers WHERE Address IS NULL;
+SELECT CustomerName, ContactName, Address FROM Customers WHERE Address IS NOT NULL;
+UPDATE Customers SET ContactName='Juan';
+DELETE FROM Customers WHERE CustomerName='Alfreds Futterkiste';
+SELECT * FROM Customers LIMIT 3;
+SELECT MIN(Price) AS SmallestPrice FROM Products;
+SELECT MAX(Price) AS LargestPrice FROM Products;
+SELECT COUNT(ProductID) FROM Products;
+SELECT AVG(Price) FROM Products;
+SELECT SUM(Quantity) FROM OrderDetails;
+SELECT * FROM Customers WHERE CustomerName LIKE 'a%'; [https://www.w3schools.com/sql/sql_wildcards.asp]
+SELECT * FROM Customers WHERE Country IN (SELECT Country FROM Suppliers);
+SELECT * FROM Products WHERE Price BETWEEN 10 AND 20 AND CategoryID NOT IN (1,2,3);
+SELECT * FROM Orders WHERE OrderDate BETWEEN #01/07/1996# AND #31/07/1996#;
+SELECT CustomerName, CONCAT(Address,', ',PostalCode,', ',City,', ',Country) AS Address FROM Customers;
+SELECT Orders.OrderID, Customers.CustomerName, Orders.OrderDate FROM Orders INNER JOIN Customers ON Orders.CustomerID=Customers.CustomerID;
+SELECT Customers.CustomerName, Orders.OrderID FROM Customers LEFT JOIN Orders ON Customers.CustomerID = Orders.CustomerID ORDER BY Customers.CustomerName;
+SELECT Orders.OrderID, Employees.LastName, Employees.FirstName FROM Orders RIGHT JOIN Employees ON Orders.EmployeeID = Employees.EmployeeID ORDER BY Orders.OrderID;
+SELECT Customers.CustomerName, Orders.OrderID FROM Customers FULL OUTER JOIN Orders ON Customers.CustomerID=Orders.CustomerID ORDER BY Customers.CustomerName;
+SELECT A.CustomerName AS CustomerName1, B.CustomerName AS CustomerName2, A.City FROM Customers A, Customers B WHERE A.CustomerID <> B.CustomerID AND A.City = B.City ORDER BY A.City;
+SELECT City FROM Customers UNION ALL SELECT City FROM Suppliers ORDER BY City;
+SELECT City, Country FROM Customers WHERE Country='Germany' UNION SELECT City, Country FROM Suppliers WHERE Country='Germany' ORDER BY City;
+SELECT Shippers.ShipperName, COUNT(Orders.OrderID) AS NumberOfOrders FROM Orders LEFT JOIN Shippers ON Orders.ShipperID = Shippers.ShipperID GROUP BY ShipperName;
+SELECT COUNT(CustomerID), Country FROM Customers GROUP BY Country HAVING COUNT(CustomerID) > 5 ORDER BY COUNT(CustomerID) DESC;
+SELECT Employees.LastName, COUNT(Orders.OrderID) AS NumberOfOrders FROM Orders INNER JOIN Employees ON Orders.EmployeeID = Employees.EmployeeID WHERE LastName = 'Davolio' OR LastName = 'Fuller' GROUP BY LastName HAVING COUNT(Orders.OrderID) > 25;
+SELECT SupplierName FROM Suppliers WHERE EXISTS (SELECT ProductName FROM Products WHERE Products.SupplierID = Suppliers.supplierID AND Price = 22);
+SELECT ProductName FROM Products WHERE ProductID = ANY (SELECT ProductID FROM OrderDetails WHERE Quantity > 99);
+SELECT ProductName FROM Products WHERE ProductID = ALL (SELECT ProductID FROM OrderDetails WHERE Quantity IS NOT NULL);
+SELECT * INTO CustomersBackup2017 IN 'Backup.mdb' FROM Customers;
+INSERT INTO Customers (CustomerName, City, Country) SELECT SupplierName, City, Country FROM Suppliers WHERE Country='Germany'; --copies only the German suppliers into "Customers"
+SELECT OrderID, Quantity, CASE WHEN Quantity > 30 THEN 'The quantity is greater than 30' WHEN Quantity = 30 THEN 'The quantity is 30' ELSE 'The quantity is under 30' END AS QuantityText FROM OrderDetails;
+SELECT ProductName, UnitPrice * (UnitsInStock + ISNULL(UnitsOnOrder, 0))
+FROM Products;
+CREATE PROCEDURE SelectAllCustomers AS SELECT * FROM Customers GO;
+EXEC SelectAllCustomers;
+
+CREATE PROCEDURE SelectAllCustomers @City nvarchar(30), @PostalCode nvarchar(10) AS SELECT * FROM Customers WHERE City = @City AND PostalCode = @PostalCode GO;
+EXEC SelectAllCustomers @City = 'London', @PostalCode = 'WA1 1DP';
+
+SELECT * FROM Customers -- WHERE City='Berlin';
+
+/*Select all the columns of all the records
+in the Customers table:*/
+
+
+SQL Database
+
+CREATE DATABASE testDB;
+DROP DATABASE testDB;
+BACKUP DATABASE testDB TO DISK = 'D:\backups\testDB.bak' WITH DIFFERENTIAL;
+
+CREATE TABLE Persons (PersonID int, LastName varchar(255), FirstName varchar(255), Address varchar(255), City varchar(255));
+DROP TABLE Shippers;
+TRUNCATE TABLE Shippers; -- deletes data but not the table
+ALTER TABLE Customers ADD Email varchar(255);
+ALTER TABLE Customers DROP COLUMN Email;
+
+Contraints -
+NOT NULL - Ensures that a column cannot have a NULL value
+UNIQUE - Ensures that all values in a column are different
+PRIMARY KEY - A combination of a NOT NULL and UNIQUE. Uniquely identifies each row in a table
+FOREIGN KEY - Uniquely identifies a row/record in another table
+CHECK - Ensures that all values in a column satisfies a specific condition
+DEFAULT - Sets a default value for a column when no value is specified
+INDEX - Used to create and retrieve data from the database very quickly
+
+CREATE TABLE Persons (ID int NOT NULL, LastName varchar(255) NOT NULL,     FirstName varchar(255) NOT NULL, Age int);
+
+ALTER TABLE Persons MODIFY Age int NOT NULL;
+
+CREATE TABLE Orders (OrderID int NOT NULL, OrderNumber int NOT NULL, PersonID int, PRIMARY KEY (OrderID), CONSTRAINT FK_PersonOrder FOREIGN KEY (PersonID REFERENCES Persons(PersonID));
+ALTER TABLE Orders ADD FOREIGN KEY (PersonID) REFERENCES Persons(PersonID);
+ALTER TABLE Orders ADD CONSTRAINT FK_PersonOrder FOREIGN KEY (PersonID) REFERENCES Persons(PersonID);
+ALTER TABLE Orders DROP FOREIGN KEY FK_PersonOrder;
+
+CREATE TABLE Persons (
+    ID int NOT NULL,
+    LastName varchar(255) NOT NULL,
+    FirstName varchar(255),
+    Age int,
+    City varchar(255),
+    CONSTRAINT CHK_Person CHECK (Age>=18 AND City='Sandnes')
+);
+
+CREATE TABLE Persons (
+    ID int NOT NULL,
+    LastName varchar(255) NOT NULL,
+    FirstName varchar(255),
+    Age int,
+    City varchar(255) DEFAULT 'Sandnes'
+);
+
+ALTER TABLE Persons ALTER City SET DEFAULT 'Sandnes';
+ALTER TABLE Persons ALTER City DROP DEFAULT;
+
+CREATE INDEX idx_pname ON Persons (LastName, FirstName);
+ALTER TABLE Persons DROP INDEX idx_pname;
+
+CREATE TABLE Persons (
+    Personid AUTOINCREMENT PRIMARY KEY,
+    LastName varchar(255) NOT NULL,
+    FirstName varchar(255),
+    Age int
+);
+
+SELECT * FROM Orders WHERE OrderDate='2008-11-11'
+
+CREATE VIEW [Brazil Customers] AS SELECT CustomerName, ContactName FROM Customers WHERE Country = 'Brazil'
+
+CREATE VIEW [Products Above Average Price] AS SELECT ProductName, Price FROM Products WHERE Price > (SELECT AVG(Price) FROM Products);
+
+DROP VIEW [Brazil Customers];
+
+uName = getRequestString("username"); uPass = getRequestString("userpassword");
+sql = 'SELECT * FROM Users WHERE Name ="' + uName + '" AND Pass ="' + uPass + '"'
+
+txtNam = getRequestString("CustomerName");
+txtAdd = getRequestString("Address");
+txtCit = getRequestString("City");
+txtSQL = "INSERT INTO Customers (CustomerName,Address,City) Values(@0,@1,@2)";
+command = new SqlCommand(txtSQL);
+command.Parameters.AddWithValue("@0",txtNam);
+command.Parameters.AddWithValue("@1",txtAdd);
+command.Parameters.AddWithValue("@2",txtCit);
+command.ExecuteNonQuery();
